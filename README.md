@@ -29,6 +29,7 @@ k apply -f f example/minikube-issuer.yaml -n clamav
 This helm customized to use azure storage class in case of other clouds update the storage class
 ```
 helm install -n <namespace> clamav ./charts/clamav
+helm install -n clamav clamav ./charts/clamav -f ./charts/clamav/values.yaml 
 ```
 
 Clamav will be installed in the namespace and available at https://clamav/
