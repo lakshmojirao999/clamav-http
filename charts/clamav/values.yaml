@@ -1,0 +1,119 @@
+# Default values for clamav.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# nameOverride -- override the name of the clamav chart
+nameOverride: ""
+
+# fullnameOverride -- override the full name of the clamav chart
+fullnameOverride: ""
+
+service:
+  # service.port -- The port to be used by the clamav service
+  port: 443
+
+clamavMirror:
+  replicaCount: 1
+  # clamavMirror.image -- The clamav-mirror docker image
+  image: quay.io/ukhomeofficedigital/acp-clamav-mirror
+  #  clamavMirror.version -- The clamav-mirror docker image version - defaults to .Chart.appVersion
+  version: ""
+  # clamavMirror.resources -- The resource requests and limits for the clamav-http service
+  resources:   
+    requests:
+      cpu: 100m
+      memory: 1000M
+    limits:
+      cpu: 200m
+      memory: 2000M
+  cvdUpdate:
+    # clamavmirror.cvdUpdate.cvdCron -- DNS based check to update the local database, only new are files download
+    cvdCron: "*/10 * * * *"
+    # clamavmirror.cvdUpdate.MirrorCron -- Frequency to rsync changes to mirror - defaults to every hour   
+    mirrorCron: "0 * * * *"
+  metricsPort: 9090
+  volume:
+    # clamavmirror.volume.storageClass -- The storage class of the volume used by clamav-mirror
+    storageClass: 'managed-csi'
+    # clamavmirror.volume.size -- The size class of the volume used by clamav-mirror in GB
+    size: 10
+
+clamavHTTP:
+  # clamavHTTP.image -- The clamav-http docker image
+  image: quay.io/ukhomeofficedigital/acp-clamav-http
+  # clamavHTTP.version -- The clamav-http docker image version - defaults to .Chart.appVersion
+  version: ""
+  resources:
+    # clamavHTTP.resources -- The resource requests and limits for the clamav-http service
+    requests:
+      cpu: 100m
+      memory: 2000M
+      ephemeral-storage: "500M"
+    limits:
+      cpu: 200m
+      memory: 3000M
+      ephemeral-storage: "1000M"
+
+clamav:
+  # clamav.image -- The clamav docker image
+  image: quay.io/ukhomeofficedigital/acp-clamav 
+  # clamav.version -- The clamav docker image version - defaults to .Chart.appVersion
+  version: ""
+  freshclam:
+    # clamav.freshclam.mirrors -- A list of clamav mirrors to be used by the clamav service
+    mirrors:
+      - database.clamav.net
+  certificate:
+    # clamav.certificate.create -- Should a certificate be created for the clamav service
+    create: true
+    # clamav.certificate.secretName -- Override the default certificate secret name
+    secretName: ""
+    # clamav.certificate.issuer -- The issuer to use when creating a certificate
+    issuer:
+      name: platform-ca
+      kind: ClusterIssuer
+  scaling:
+    # clamav.scaling.minReplicas -- The minumum number of clamav replicas
+    minReplicas: 1
+    # clamav.scaling.maxReplicas -- The maximum number of clamav replicas
+    maxReplicas: 20
+    # clamav.scaling.cpuTarget -- The target cpu usage percentage for clamav
+    cpuTarget: 30
+  limits:
+    # clamav.limits.fileSize -- The largest file size scanable by clamav, in MB
+    fileSize: 20
+    # clamav.limits.scanSize -- The largest scan size permitted in clamav, in MB
+    scanSize: 100
+    # clamav.limits.connectionQueueLength -- Maximum length the queue of pending connections may grow to
+    connectionQueueLength: 200
+    # clamav.limits.maxThreads --Maximum number of threads running at the same time.
+    maxThreads: 10
+    # clamav.sendBufTimeout -- This option specifies how long to wait (in milliseconds) if the send buffer is full, keep low to avoid clamd hanging
+    sendBufTimeout: 500
+
+
+  resources:
+    # clamav.resources -- The resource requests and limits for the clamav service
+    requests:
+      cpu: 100m
+      memory: 2000M
+      ephemeral-storage: "500M"
+    limits:
+      cpu: 150m
+      memory: 3000M
+      ephemeral-storage: "1000M"
+nginxProxy:
+  # nginxProxy.image -- The nginx proxy docker image
+  image: quay.io/ukhomeofficedigital/nginx-proxy
+  # nginxProxy.version -- The nginx proxy docker image version
+  version: v3.4.20
+  # nginxProxy.resources -- The resource requests and limits for the nginx proxy service
+  resources:
+    requests:
+      cpu: 100m
+      memory: 2000M
+      ephemeral-storage: "500M"
+    limits:
+      cpu: 200m
+      memory: 3000M
+      ephemeral-storage: "1000M"
